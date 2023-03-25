@@ -67,8 +67,8 @@ time=2023-03-25T10:57:51.772+01:00 level=DEBUG msg=hello app=app version=d1da844
 
 #### Propagate a trace identifier through the context.
 
-`NewTrace` can create a new context with an UUID v4 as identifier.
-It's also possible to create a custom one by using directly `Trace` and propagate it through a `context.Context`.
+`NewTrace` can create a new trace context with an UUID v4 as identifier.
+It's also possible to create a custom one by directly  using `Trace` and propagate it through a `context.Context`.
 
 ```go
 var (
