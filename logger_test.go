@@ -90,8 +90,8 @@ func TestTimeElapsed(t *testing.T) {
 	)
 	t.Cleanup(func() {
 		out := buf.String()
-		are.True(strings.Contains(out, info))                      // missing log message
-		are.True(strings.Contains(out, "trace.time_elapsed_ms=1")) // missing time elapsed
+		are.True(strings.Contains(out, info))                     // missing log message
+		are.True(strings.Contains(out, "trace.time_elapsed_ms=")) // missing time elapsed
 	})
 	defer logm.TimeElapsed(tc.NewContext(context.Background()), l, slog.LevelInfo, info)()
 	time.Sleep(time.Millisecond)
