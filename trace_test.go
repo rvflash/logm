@@ -160,5 +160,6 @@ func TestTrace_Start(t *testing.T) {
 	t.Parallel()
 	tc := logm.Trace{}
 	tc.Start()
+	time.Sleep(time.Millisecond)
 	is.New(t).True(tc.StartTime.Before(time.Now()))
 }

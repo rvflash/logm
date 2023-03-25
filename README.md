@@ -58,7 +58,7 @@ time=2023-03-25T00:04:35.287+01:00 level=INFO msg=hello app=app version=d1da8447
 #### Create a logger to debug on standard output.
 
 ```go
-log := logm.DebugLogger("app", os.Stdout)
+log := logm.DefaultLogger("app", os.Stdout)
 log.Debug("hello")
 ```
 ```bash
@@ -67,8 +67,8 @@ time=2023-03-25T10:57:51.772+01:00 level=DEBUG msg=hello app=app version=d1da844
 
 #### Propagate a trace identifier through the context.
 
-`slog.NewTrace` can create a new context with an UUID v4 as identifier.
-It's also possible to create a custom one by using directly `slog.Trace` and propagate it through a `context.Context`.
+`NewTrace` can create a new context with an UUID v4 as identifier.
+It's also possible to create a custom one by using directly `Trace` and propagate it through a `context.Context`.
 
 ```go
 var (
