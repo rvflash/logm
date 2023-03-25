@@ -30,9 +30,6 @@ func NewTraceFromContext(ctx context.Context) *Trace {
 }
 
 func contextValue(ctx context.Context, key contextual) string {
-	if ctx == nil {
-		return ""
-	}
 	if v, ok := ctx.Value(key).(string); ok {
 		return v
 	}
@@ -78,11 +75,6 @@ func (t *Trace) End() {
 	t.TimeElapsedMs = time.Since(t.StartTime).Milliseconds()
 }
 
-// NewContext creates a new trace context.Context to carry the trace identifier.
-func (t *Trace) NewContext(ctx context.Context) context.Context {
-	return context.WithValue(ctx, ctxTraceID, t.ID)
-}
-
 // LogAttr returns the trace as a slog.Attr.
 func (t *Trace) LogAttr() slog.Attr {
 	return slog.Group(TraceKey, t.logAttrs()...)
@@ -104,6 +96,11 @@ func (t *Trace) logAttrs() []slog.Attr {
 		res = append(res, slog.Int64(TraceTimeElapsedKey, t.TimeElapsedMs))
 	}
 	return res
+}
+
+// NewContext creates a new trace context.Context to carry the trace identifier.
+func (t *Trace) NewContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, ctxTraceID, t.ID)
 }
 
 // Start adds a start time to the trace.

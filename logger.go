@@ -16,6 +16,12 @@ func DebugLogger(name string, w io.Writer) *slog.Logger {
 	return NewLogger(name, w, slog.LevelDebug)
 }
 
+// DefaultLogger returns a new instance of Logger, ready to be use in production mode.
+// Debug messages are ignored and each message will include the application name and version.
+func DefaultLogger(name string, w io.Writer) *slog.Logger {
+	return NewLogger(name, w, slog.LevelInfo)
+}
+
 // DiscardLogger is a logger doing anything. Useful for test purpose and default behavior.
 func DiscardLogger() *slog.Logger {
 	l := slog.New(slog.NewTextHandler(io.Discard))
@@ -23,7 +29,7 @@ func DiscardLogger() *slog.Logger {
 	return l
 }
 
-// NewLogger returns a new instance of Logger with level is the minimum log level to consider.
+// NewLogger returns a new instance of Logger where the level is the minimum log level to consider.
 // Each message will include the application name and version.
 func NewLogger(name string, w io.Writer, level slog.Level) *slog.Logger {
 	h := slog.HandlerOptions{
@@ -46,12 +52,6 @@ func vcsVersion() string {
 		}
 	}
 	return ""
-}
-
-// StdLogger returns a new instance of Logger, ready to be use in production mode.
-// Debug messages are ignored and each message will include the application name and version.
-func StdLogger(name string, w io.Writer) *slog.Logger {
-	return NewLogger(name, w, slog.LevelInfo)
 }
 
 // TimeElapsed allows to monitor the execution time of a function.

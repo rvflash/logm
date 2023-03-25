@@ -9,31 +9,6 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-// RecoverHandler is an HTTP middleware designed to recover on panic, log the error and debug the stack trace.
-func RecoverHandler(msg string, l *slog.Logger, next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			pr := recover()
-			if pr != nil {
-				var err error
-				switch t := pr.(type) {
-				case string:
-					err = errors.New(t)
-				case error:
-					err = t
-				default:
-					err = fmt.Errorf("unsupported panic type: %#v", t)
-				}
-				t := NewTrace()
-				l.Error(err.Error(), PanicKey, t, logHTTPRequest(r))
-				l.Debug(string(debug.Stack()), PanicKey, t, logHTTPRequest(r))
-				http.Error(w, msg, http.StatusInternalServerError)
-			}
-		}()
-		next.ServeHTTP(w, r)
-	})
-}
-
 // LogHandler is an HTTP middleware designed to log every request and response.
 func LogHandler(l *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -88,6 +63,31 @@ func (w *httpResponseWriter) Write(data []byte) (n int, err error) {
 func (w *httpResponseWriter) WriteHeader(code int) {
 	w.statusCode = code
 	w.ResponseWriter.WriteHeader(code)
+}
+
+// RecoverHandler is an HTTP middleware designed to recover on panic, log the error and debug the stack trace.
+func RecoverHandler(msg string, l *slog.Logger, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			pr := recover()
+			if pr != nil {
+				var err error
+				switch t := pr.(type) {
+				case string:
+					err = errors.New(t)
+				case error:
+					err = t
+				default:
+					err = fmt.Errorf("unsupported panic type: %#v", t)
+				}
+				t := NewTrace()
+				l.Error(err.Error(), PanicKey, t, logHTTPRequest(r))
+				l.Debug(string(debug.Stack()), PanicKey, t, logHTTPRequest(r))
+				http.Error(w, msg, http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }
 
 // TraceHandler is an HTTP middleware designed to share the trace context in the request context.
