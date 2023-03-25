@@ -2,7 +2,7 @@
 
 [![GoDoc](https://godoc.org/github.com/rvflash/logm?status.svg)](https://godoc.org/github.com/rvflash/logm)
 [![Build Status](https://github.com/rvflash/logm/workflows/build/badge.svg)](https://github.com/rvflash/logm/actions?workflow=build)
-[![Code Coverage](https://codecov.io/gh/rvflash/logm/branch/master/graph/badge.svg)](https://codecov.io/gh/rvflash/logm)
+[![Code Coverage](https://codecov.io/gh/rvflash/logm/branch/main/graph/badge.svg)](https://codecov.io/gh/rvflash/logm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rvflash/logm?)](https://goreportcard.com/report/github.com/rvflash/logm)
 
 
