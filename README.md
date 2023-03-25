@@ -55,17 +55,17 @@ $ cat app.log
 time=2023-03-25T00:04:35.287+01:00 level=INFO msg=hello app=app version=d1da844711730f2f5cbd08be93e62e71475f7d4e
 ```
 
-#### Create a logger to debug on standard output.
+### Create a logger to debug on standard output.
 
 ```go
-log := logm.DefaultLogger("app", os.Stdout)
+log := logm.DebugLogger("app", os.Stdout)
 log.Debug("hello")
 ```
 ```bash
 time=2023-03-25T10:57:51.772+01:00 level=DEBUG msg=hello app=app version=d1da844711730f2f5cbd08be93e62e71475f7d4e
 ```
 
-#### Propagate a trace identifier through the context.
+### Propagate a trace identifier through the context.
 
 `NewTrace` can create a new trace context with an UUID v4 as identifier.
 It's also possible to create a custom one by directly  using `Trace` and propagate it through a `context.Context`.
@@ -77,11 +77,11 @@ var (
 )
 ```
 
-#### Add the trace context on each log.
+### Add the trace context on each log.
 
 ```go
 var (
-    l = logm.DebugLogger("app", os.Stdout)
+    l = logm.DefaultLogger("app", os.Stdout)
     t = logm.NewTrace()
 )
 log := l.With(t.LogAttr())
@@ -93,11 +93,11 @@ time=2023-03-25T13:06:37.322+01:00 level=INFO msg=hello app=app version=d1da8447
 time=2023-03-25T13:06:37.322+01:00 level=WARN msg=world app=app version=d1da844711730f2f5cbd08be93e62e71475f7d4e trace.id=0a02e16c-7418-4558-9dcc-718c007162b6
 ```
 
-#### Monitor the time elapsed by a function on `defer`.
+### Monitor the time elapsed by a function on `defer`.
 
 ```go
 var (
-    log = logm.DebugLogger("app", os.Stdout)
+    log = logm.DefaultLogger("app", os.Stdout)
     ctx = context.Background()
 )
 func(ctx context.Context, log *slog.Logger) {
