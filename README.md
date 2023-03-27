@@ -20,7 +20,8 @@ LogM is a Go log management package providing facilities to deal with logs and t
    - `LogHandler`: a logging middleware to log detail about the request and the response.
    - `RecoverHandler`: a middleware to recover on panic, log the message as ERROR and the stack trace as DEBUG. 
    - `TraceHandler`: a middleware to retrieve request header `X-Trace-Id` (see `NewTraceFromHTTPRequest`) and propagate its value through the request context.
-5. Provides `TimeElapsed` to log in defer the time elapsed of a function. 
+5. Provides `TimeElapsed` to log in defer the time elapsed of a function.
+6. Offers a testing sub-package named `logmtest` to verify the data logged.
 
 
 ### Installation
@@ -107,4 +108,30 @@ func(ctx context.Context, log *slog.Logger) {
 ```
 ```bash
 time=2023-03-25T12:06:17.605+01:00 level=INFO msg=example app=app version=d1da844711730f2f5cbd08be93e62e71475f7d4e trace.id=ccc05db1-68d2-4442-9353-0789e0b8ca55 trace.time_elapsed_ms=1
+```
+
+### Test whether the data is logged in order and contains expected contents. 
+
+Testing the logged data sometimes seems useless, but it can be reassuring to quickly check a stream to preserve.
+The `logmtest.NewRecorder` provides an in-memory log writer useful for that,
+with a method `Expect` to check each `Record`.
+Two options to adjust the verification:
+- `ExpectAnyOrder` to match all expectations in the order they were set or not. By default, it expects in order.
+- `ExpectUnexpected` to ignore not matching records. By default, if a record is not expected, an error will be triggered.
+
+```go
+var (
+    rec = logmtest.NewRecorder()
+    log = logm.DefaultLogger("testing", rec)
+)
+log.Info("hello")
+log.Warn("beautiful")
+log.Error("world")
+
+err := rec.Expect(
+    logmtest.Record{Contains: "hello"},
+    logmtest.Record{Contains: "beau"},
+    logmtest.Record{Contains: "world"},
+)
+// Will return no error.
 ```
