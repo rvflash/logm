@@ -115,6 +115,7 @@ func RecoverHandler(msg string, l *slog.Logger, next http.Handler) http.Handler 
 func TraceHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := NewTraceFromHTTPRequest(r)
-		next.ServeHTTP(w, r.WithContext(t.NewContext(r.Context())))
+		r = r.WithContext(t.NewContext(r.Context()))
+		next.ServeHTTP(w, r)
 	})
 }
