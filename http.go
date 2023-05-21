@@ -91,7 +91,7 @@ func (m Middleware) RecoverHandler(next http.Handler) http.Handler {
 				default:
 					err = fmt.Errorf("unsupported panic type: %#v", t)
 				}
-				t := NewTrace()
+				t := NewTraceFromHTTPRequest(r)
 				m.Logger.Error(err.Error(), PanicKey, t, logHTTPRequest(r))
 				m.Logger.Debug(string(debug.Stack()), PanicKey, t, logHTTPRequest(r))
 				http.Error(w, msg, http.StatusInternalServerError)
