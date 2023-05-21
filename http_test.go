@@ -67,20 +67,44 @@ func TestTraceHandler(t *testing.T) {
 
 func TestRecoverHandler(t *testing.T) {
 	t.Parallel()
-	var (
-		are  = is.New(t)
-		next = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			panic(warn)
-		})
-		buf = new(bytes.Buffer)
-		log = logm.DebugLogger(name, buf)
-		hdl = logm.RecoverHandler(intErr, log, next)
-		req = httptest.NewRequest(http.MethodGet, target, nil)
-		res = httptest.NewRecorder()
-	)
-	hdl.ServeHTTP(res, req)
-	are.Equal(http.StatusInternalServerError, res.Code) // unexpected response code
-	out := buf.String()
-	are.True(strings.Contains(out, "level=ERROR msg=earth"))      // unexpected error message
-	are.True(strings.Contains(out, `level=DEBUG msg="goroutine`)) // unexpected debug message
+
+	t.Run("Default message", func(t *testing.T) {
+		var (
+			are  = is.New(t)
+			next = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				panic(warn)
+			})
+			buf = new(bytes.Buffer)
+			log = logm.DebugLogger(name, buf)
+			hdl = logm.RecoverHandler("", log, next)
+			req = httptest.NewRequest(http.MethodGet, target, nil)
+			res = httptest.NewRecorder()
+		)
+		hdl.ServeHTTP(res, req)
+		are.Equal(http.StatusInternalServerError, res.Code) // unexpected response code
+		out := buf.String()
+		are.True(strings.Contains(out, "level=ERROR msg=earth"))      // unexpected error message
+		are.True(strings.Contains(out, `level=DEBUG msg="goroutine`)) // unexpected debug message
+		are.Equal("Internal Server Error\n", res.Body.String())       // unexpected response message
+	})
+
+	t.Run("Custom message", func(t *testing.T) {
+		var (
+			are  = is.New(t)
+			next = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				panic(warn)
+			})
+			buf = new(bytes.Buffer)
+			log = logm.DebugLogger(name, buf)
+			hdl = logm.RecoverHandler(intErr, log, next)
+			req = httptest.NewRequest(http.MethodGet, target, nil)
+			res = httptest.NewRecorder()
+		)
+		hdl.ServeHTTP(res, req)
+		are.Equal(http.StatusInternalServerError, res.Code) // unexpected response code
+		out := buf.String()
+		are.True(strings.Contains(out, "level=ERROR msg=earth"))      // unexpected error message
+		are.True(strings.Contains(out, `level=DEBUG msg="goroutine`)) // unexpected debug message
+		are.Equal(intErr+"\n", res.Body.String())                     // unexpected response message
+	})
 }

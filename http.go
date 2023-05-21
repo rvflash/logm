@@ -9,15 +9,21 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+// Middleware provides some standard HTTP handlers to deal with logs.
+type Middleware struct {
+	Logger       *slog.Logger
+	ErrorMessage string
+}
+
 // LogHandler is an HTTP middleware designed to log every request and response.
-func LogHandler(l *slog.Logger, next http.Handler) http.Handler {
+func (m Middleware) LogHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := NewTraceFromHTTPRequest(r)
 		t.Start()
 		wh := newHTTPResponseWriter(w)
 		next.ServeHTTP(wh, r)
 		t.End()
-		l.Info(
+		m.Logger.Info(
 			fmt.Sprintf("%d %s %s", wh.statusCode, r.Method, r.URL.Path),
 			logHTTPRequest(r),
 			logHTTPResponse(wh),
@@ -66,7 +72,12 @@ func (w *httpResponseWriter) WriteHeader(code int) {
 }
 
 // RecoverHandler is an HTTP middleware designed to recover on panic, log the error and debug the stack trace.
-func RecoverHandler(msg string, l *slog.Logger, next http.Handler) http.Handler {
+// If no error message is provided, we used the default internal error message.
+func (m Middleware) RecoverHandler(next http.Handler) http.Handler {
+	msg := m.ErrorMessage
+	if msg == "" {
+		msg = http.StatusText(http.StatusInternalServerError)
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			pr := recover()
@@ -81,13 +92,23 @@ func RecoverHandler(msg string, l *slog.Logger, next http.Handler) http.Handler 
 					err = fmt.Errorf("unsupported panic type: %#v", t)
 				}
 				t := NewTrace()
-				l.Error(err.Error(), PanicKey, t, logHTTPRequest(r))
-				l.Debug(string(debug.Stack()), PanicKey, t, logHTTPRequest(r))
+				m.Logger.Error(err.Error(), PanicKey, t, logHTTPRequest(r))
+				m.Logger.Debug(string(debug.Stack()), PanicKey, t, logHTTPRequest(r))
 				http.Error(w, msg, http.StatusInternalServerError)
 			}
 		}()
 		next.ServeHTTP(w, r)
 	})
+}
+
+// LogHandler is an HTTP middleware designed to log every request and response.
+func LogHandler(l *slog.Logger, next http.Handler) http.Handler {
+	return Middleware{Logger: l}.LogHandler(next)
+}
+
+// RecoverHandler is an HTTP middleware designed to recover on panic, log the error and debug the stack trace.
+func RecoverHandler(msg string, l *slog.Logger, next http.Handler) http.Handler {
+	return Middleware{ErrorMessage: msg, Logger: l}.RecoverHandler(next)
 }
 
 // TraceHandler is an HTTP middleware designed to share the trace context in the request context.
