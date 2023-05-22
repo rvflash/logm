@@ -116,6 +116,7 @@ func TraceHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t := NewTraceFromHTTPRequest(r)
 		r = r.WithContext(t.NewContext(r.Context()))
+		r.Header.Set(TraceIDHTTPHeader, t.ID)
 		next.ServeHTTP(w, r)
 	})
 }
